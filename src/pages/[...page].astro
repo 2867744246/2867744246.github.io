@@ -34,11 +34,11 @@ const { page } = Astro.props;
 	</div>
 	<nav class="mt-8 flex items-center justify-between text-sm">
 		{page.url.prev
-			? <a href={page.url.prev} class="hover:text-amber-600">← 上一页</a>
+			? <a href={page.url.prev} class="hover:text-amber-600 dark:hover:text-amber-400">← 上一页</a>
 			: <span />}
 		<span class="text-zinc-500 dark:text-zinc-400">第 {page.currentPage} / {page.lastPage} 页</span>
 		{page.url.next
-			? <a href={page.url.next} class="hover:text-amber-600">下一页 →</a>
+			? <a href={page.url.next} class="hover:text-amber-600 dark:hover:text-amber-400">下一页 →</a>
 			: <span />}
 	</nav>
 </BaseLayout>

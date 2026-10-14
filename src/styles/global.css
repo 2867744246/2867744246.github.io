@@ -1,9 +1,31 @@
 /*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
+  全局样式表（接入 Tailwind CSS v4 后的合并改造版）
 
+  区块说明：
+  1. Tailwind 入口：导入 Tailwind 主样式（含 preflight 基础重置、主题变量、工具类）
+  2. 暗色变体：采用 class 策略，html 元素上存在 .dark 类时暗色工具类生效
+  3. typography 插件：为文章正文提供 prose 排版样式
+  4. 模板遗留基础样式：来自 Astro 官方 blog 模板（改自 Bear Blog 默认样式），
+     其中字体样式依赖 Astro fonts 集成注入的 --font-atkinson 变量，必须保留；
+     其余基础排版样式在后续任务用 Tailwind 类名重写 UI 时逐步替换
+*/
+
+/* ========== 1. Tailwind v4 入口 ========== */
+@import "tailwindcss";
+
+/* ========== 2. 暗色模式用 class 策略：html 上有 .dark 时生效 ========== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ========== 3. 启用 prose 排版插件（文章正文用） ========== */
+@plugin "@tailwindcss/typography";
+
+/* ========== 4. 模板遗留基础样式 ==========
+   基于 Bear Blog 默认样式改写
+   https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
+   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
+*/
+
+/* 主题色与灰阶变量 */
 :root {
 	--accent: #2337ff;
 	--accent-dark: #000d8a;
@@ -16,6 +38,8 @@
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
 }
+
+/* 基础排版：font-family 使用 Astro fonts 集成的 Atkinson 字体变量（关键保留项） */
 body {
 	font-family: var(--font-atkinson);
 	margin: 0;
@@ -122,6 +146,7 @@ hr {
 	}
 }
 
+/* 无障碍：仅供屏幕阅读器可见 */
 .sr-only {
 	border: 0;
 	padding: 0;

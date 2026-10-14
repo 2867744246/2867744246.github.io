@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import { SITE } from '../config';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+// 首页分页：按发布日期倒序，/ 为第一页，/2、/3 为后续页
+export async function getStaticPaths({ paginate }: { paginate: any }) {
+	const posts = (await getCollection('posts')).sort(
+		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+	);
+	return paginate(posts, { pageSize: SITE.itemsPerPage });
+}
+
+interface PageProp {
+	data: CollectionEntry<'posts'>[];
+	currentPage: number;
+	lastPage: number;
+	url: { prev: string | undefined; next: string | undefined };
+}
+
+interface Props {
+	page: PageProp;
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout title={SITE.title} description={SITE.description}>
+	<h1 class="mb-6 text-2xl font-bold">最新文章</h1>
+	<div class="flex flex-col gap-5">
+		{page.data.map((post) => <PostCard post={post} />)}
+	</div>
+	<nav class="mt-8 flex items-center justify-between text-sm">
+		{page.url.prev
+			? <a href={page.url.prev} class="hover:text-amber-600">← 上一页</a>
+			: <span />}
+		<span class="text-zinc-500 dark:text-zinc-400">第 {page.currentPage} / {page.lastPage} 页</span>
+		{page.url.next
+			? <a href={page.url.next} class="hover:text-amber-600">下一页 →</a>
+			: <span />}
+	</nav>
+</BaseLayout>

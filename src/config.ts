@@ -3,6 +3,7 @@ export const SITE = {
 	title: '我的博客',
 	author: '2867744246',
 	description: '记录技术与生活',
+	// 注意：需与 astro.config.mjs 的 site 保持一致；RSS/sitemap/canonical 实际读取的是后者
 	url: 'https://2867744246.github.io',
 	social: {
 		github: 'https://github.com/2867744246',

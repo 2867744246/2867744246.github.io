@@ -1,4 +1,4 @@
-<button id="theme-toggle" aria-label="切换暗色模式"
+<button id="theme-toggle" aria-label="切换暗色模式" aria-pressed="false"
 	class="rounded p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800">
 	<!-- 太阳：浅色模式下显示 -->
 	<svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none"
@@ -14,9 +14,11 @@
 </button>
 
 <script>
-	// 点击切换 html.dark 并记忆到 localStorage
-	document.getElementById("theme-toggle")?.addEventListener("click", () => {
+	// 点击切换 html.dark 并记忆到 localStorage，同步 aria-pressed 供辅助技术感知状态
+	const btn = document.getElementById("theme-toggle");
+	btn?.addEventListener("click", () => {
 		const dark = document.documentElement.classList.toggle("dark");
 		localStorage.setItem("theme", dark ? "dark" : "light");
+		btn.setAttribute("aria-pressed", String(dark));
 	});
 </script>

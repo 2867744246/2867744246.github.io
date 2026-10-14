@@ -14,11 +14,18 @@
 </button>
 
 <script>
-	// 点击切换 html.dark 并记忆到 localStorage，同步 aria-pressed 供辅助技术感知状态
+	// 页面加载后先按当前 html.dark 状态同步初始 aria-pressed，再绑定点击切换
 	const btn = document.getElementById("theme-toggle");
+	const syncPressed = () =>
+		btn?.setAttribute(
+			"aria-pressed",
+			String(document.documentElement.classList.contains("dark")),
+		);
+	syncPressed();
 	btn?.addEventListener("click", () => {
+		// 点击切换 html.dark 并记忆到 localStorage，同步 aria-pressed 供辅助技术感知状态
 		const dark = document.documentElement.classList.toggle("dark");
 		localStorage.setItem("theme", dark ? "dark" : "light");
-		btn.setAttribute("aria-pressed", String(dark));
+		syncPressed();
 	});
 </script>

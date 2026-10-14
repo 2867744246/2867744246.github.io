@@ -11,6 +11,3 @@ export const SITE = {
 	// 首页分页大小
 	itemsPerPage: 10,
 } as const;
-
-// 文章类型：tech=技术文章，essay=随笔
-export type PostType = 'tech' | 'essay';

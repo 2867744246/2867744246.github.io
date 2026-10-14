@@ -19,6 +19,11 @@
 /* ========== 3. 启用 prose 排版插件（文章正文用） ========== */
 @plugin "@tailwindcss/typography";
 
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
 /* ========== 4. 模板遗留基础样式 ==========
    基于 Bear Blog 默认样式改写
    https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css

@@ -1,0 +1,37 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import { SITE } from '../config';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+
+// 全部文章按日期倒序，再按年份分组
+const posts = (await getCollection('posts')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const byYear = new Map<number, CollectionEntry<'posts'>[]>();
+for (const post of posts) {
+	const year = post.data.pubDate.getFullYear();
+	if (!byYear.has(year)) byYear.set(year, []);
+	byYear.get(year)!.push(post);
+}
+---
+
+<BaseLayout title={`归档 · ${SITE.title}`} description="全部文章归档">
+	<h1 class="mb-6 text-2xl font-bold">归档</h1>
+	{[...byYear.entries()].map(([year, list]) => (
+		<section class="mb-8">
+			<h2 class="mb-3 text-xl font-semibold text-amber-700 dark:text-amber-400">{year}</h2>
+			<ul class="space-y-2">
+				{list.map((post) => (
+					<li class="flex items-baseline gap-4 text-sm">
+						<FormattedDate date={post.data.pubDate} />
+						<a href={`/posts/${post.id}/`} class="hover:text-amber-600 dark:hover:text-amber-400">
+							{post.data.title}
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	))}
+</BaseLayout>

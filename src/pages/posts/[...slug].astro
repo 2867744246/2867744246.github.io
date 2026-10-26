@@ -5,6 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import TagList from '../../components/TagList.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
+import PostNav from '../../components/PostNav.astro';
 
 // 每篇文章生成一个静态页，slug 即文件名（不含扩展名）
 export async function getStaticPaths() {
@@ -30,7 +31,8 @@ const { Content, headings } = await render(post);
 				<TagList tags={post.data.tags} />
 			</div>
 		</header>
-			<TableOfContents headings={headings} />
+		<PostNav currentSlug={post.id} />
+		<TableOfContents headings={headings} />
 		<div class="prose prose-zinc dark:prose-invert max-w-none">
 			<Content />
 		</div>

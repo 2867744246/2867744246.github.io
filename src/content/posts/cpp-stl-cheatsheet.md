@@ -1,12 +1,12 @@
 ---
-title: C++ 刷题速查：常用 STL 容器
+title: C++ 刷题速查
 description: 刷算法题时最常用的 STL 容器 API 速查——vector、string、map、set 及队列栈堆，附复杂度与常见坑。
 pubDate: 2026-10-26
 type: tech
 tags: [C++, STL, 数据结构]
 ---
 
-刷题时八成的代码都围着几个 STL 容器转。这篇是纯速查表：每个 API 一行说明、复杂度标在注释里，每个大项末尾附「坑」。按需跳读，不用从头看到尾。
+
 
 ## vector：动态数组
 
@@ -147,6 +147,102 @@ s.upper_bound(x);              // 第一个 >  x 的元素的迭代器
 - set 的迭代器是 const，不能通过迭代器改元素的值——改值 = 先 erase 再 insert
 - `lower_bound` 是成员函数版（二分树内查找 O(log n)）；写成 `lower_bound(s.begin(), s.end(), x)` 是对迭代器线性扫描，效率差一个数量级
 
+## 迭代器：容器的通用指针
+
+迭代器是所有 STL 容器统一的访问方式，行为像指针。关键差异：`vector`/`string`/`deque` 的迭代器支持随机访问（可 `+n`），`map`/`set`/`list` 的只能逐步移动。
+
+```cpp
+vector<int> v = {1, 2, 3};
+auto it = v.begin();           // 指向首元素
+auto end = v.end();            // 尾后位置（最后一个元素之后），不可解引用
+v.rbegin(); v.rend();          // 反向迭代器，倒序遍历用
+
+*it;                           // 解引用，访问元素，O(1)
+it->first;                     // 访问元素成员，等价 (*it).first（map 元素是 pair）
+++it;                          // 前进一格；--it 后退一格
+it + 5;                        // 直接跳跃，仅随机访问迭代器支持
+it2 - it;                      // 迭代器差值（即两位置的下标差），同上
+
+// 迭代器版循环：注意是 != 而不是 <，!= 对所有容器通用
+for (auto it = v.begin(); it != v.end(); ++it) {
+    // *it 访问当前元素
+}
+
+// 常用工具函数（<iterator>）
+advance(it, 3);                // it 前进 3 步（list/map 也能用，逐格走 O(n)）
+auto nxt = next(it);           // it 的下一位置，不改变 it
+auto prv = prev(it);           // it 的上一位置
+distance(v.begin(), it);       // it 距起点的步数（= 下标）
+```
+
+**坑：**
+
+- `*v.end()` 是 UB——`end()` 是尾后标记，不指向真实元素
+- 区间一律左闭右开 `[begin, end)`：`end() - begin() == size()`，循环条件写 `!= end()`
+- `it++` 返回旧迭代器会多一次拷贝，写 `++it`；`it` 失效后再用是 UB（vector 扩容、erase 都会失效）
+- 迭代器只支持比较"同从一个容器出来的"，拿不同容器的迭代器相减/比较是 UB
+
+## 链表：list 与手写 ListNode
+
+STL 的 `list` 是双向链表：已拿到迭代器的位置插入删除 O(1)，但没有随机访问。刷题里直接用得少（链表题给的多半是自定义节点），API 了解即可，重点在下面的指针套路。
+
+```cpp
+list<int> l = {1, 2, 3};
+
+l.push_back(x); l.push_front(x);   // 两端插入，O(1)
+l.pop_back(); l.pop_front();       // 两端删除，O(1)
+l.insert(it, x);                   // 在 it 位置前插入，O(1)（要求已有 it）
+l.erase(it);                       // 删除 it 位置，O(1)，返回下一个迭代器
+l.remove(x);                       // 按值删除所有等于 x 的元素，O(n)
+l.reverse();                       // 原地反转，O(n)
+l.sort();                          // 归并排序，O(n log n)
+l.unique();                        // 相邻去重（先 sort 再 unique = 全量去重）
+l.merge(l2);                       // 合并有序链表 l2 进 l，O(n)
+```
+
+**坑：**
+
+- 没有 `l[i]`，访问第 n 个只能从 `begin()` 逐格走，O(n)
+- `std::sort(l.begin(), l.end())` 直接编译报错（缺随机访问能力），必须用成员函数 `l.sort()`
+
+刷题平台的链表题是自定义节点，操作全靠指针：
+
+```cpp
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+// 虚拟头节点：头节点的插入删除不再需要特判，几乎每道链表题都值得先造一个
+ListNode dummy(0);
+dummy.next = head;
+ListNode* cur = &dummy;
+
+// 反转链表（三指针模板）
+ListNode *prev = nullptr, *curr = head;
+while (curr) {
+    ListNode* nxt = curr->next;    // 先存后继，断链前必须保存
+    curr->next = prev;
+    prev = curr;
+    curr = nxt;
+}
+// 循环结束 prev 即新头
+
+// 快慢指针：一次遍历找中点（偶数长度时 slow 停在右半段起点）
+ListNode *slow = head, *fast = head;
+while (fast && fast->next) {
+    slow = slow->next;
+    fast = fast->next->next;
+}
+```
+
+**坑：**
+
+- 改 `cur->next` 之前先把原后继存进局部变量，链一旦断了就找不回后半段
+- 访问 `cur->next->next` 前必须先判 `cur->next` 非空，短路条件顺序不能反（`fast->next && fast` 是反例写法）
+- 删除头节点、在头前插入这类"动头"的题，不造 dummy 就得写一堆 `if (cur == head)` 特判
+
 ## 队列、栈、双端队列、堆
 
 这四个 API 少，各配一句典型场景。
@@ -193,19 +289,3 @@ priority_queue<pair<int,int>, vector<pair<int,int>>, decltype(cmp)> pq2(cmp);
 - `pop()` 一律没有返回值，取值必须先 `front()`/`top()` 再 `pop()`，顺序反了就是 UB
 - 空 `stack`/`queue`/堆 上调 `top()`/`front()`/`pop()` 都是 UB，循环条件先写 `!empty()`
 - `priority_queue` 的比较器逻辑和 `sort` 相反：比较器里写 `a > b` 语义是"a 优先级低"，默认就是大根堆；小根堆才用 `greater`
-
-## 一句话选型
-
-| 需求 | 用什么 |
-| --- | --- |
-| 动态数组、邻接表、DP | `vector` |
-| 有序 + 去重 / 有序 + 计数 | `set` / `multiset` |
-| 只判存在、去重，不在乎顺序 | `unordered_set` |
-| 有序键值映射、范围查询 | `map` |
-| 键值读写、计数 | `unordered_map` |
-| BFS、先进先出 | `queue` |
-| DFS 手工栈、括号、单调栈 | `stack` |
-| 滑动窗口最值 | `deque` |
-| TopK、最短路径 | `priority_queue` |
-
-API 就这些，剩下的组合拳（双指针、二分、前缀和）都是架在这些容器上的套路，以后另开一篇。
